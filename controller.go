@@ -7,7 +7,7 @@ You may obtain a copy of the License at
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
+See the License for  the specific language governing permissions and
 limitations under the License.
 */
 
@@ -47,9 +47,40 @@ http {
     location {{$path.Path}} {
     {{end}}
       proxy_pass http://{{$path.Backend.ServiceName}}:{{$path.Backend.ServicePort}}/;
+      proxy_set_header Host $host;
     }{{end}}
   }{{end}}{{end}}
 }`
+
+//nginxConf = `
+//events {
+//  worker_connections 1024;
+//}
+//http {
+//{{range $ing := .Items}}
+//{{range $rule := $ing.Spec.Rules}}
+//  server {
+//    listen 80;
+//    server_name {{$rule.Host}};
+//    resolver 127.0.0.1;
+//    proxy_http_version 1.1;
+//	proxy_set_header HOST $host;
+//	proxy_set_header X-Forwarded-Proto $scheme;
+//	proxy_set_header X-Real-IP $remote_addr;
+//	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+//{{ range $path := $rule.HTTP.Paths }}
+//    {{if eq $path.Path "" }}
+//    location / {
+//    {{else}}
+//    location {{$path.Path}} {
+//    {{end}}
+//      proxy_pass http://{{$path.Backend.ServiceName}}:{{$path.Backend.ServicePort}}/;
+//      proxy_set_header Upgrade $http_upgrade;
+//	  proxy_set_header Connection 'upgrade';
+//	  proxy_cache_bypass $http_upgrade;
+//    }{{end}}
+//  }{{end}}{{end}}
+//}`
 )
 
 func shellOut(cmd string) {
