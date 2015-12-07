@@ -14,3 +14,5 @@ kubectl create -f rc.yaml
 
 look : 
 https://github.com/kubernetes/kubernetes/blob/master/docs/user-guide/ingress.md
+
+update for kubernetes v1.1.2

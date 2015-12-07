@@ -26,6 +26,7 @@ import (
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util"
+	"k8s.io/kubernetes/pkg/api/unversioned"
 )
 
 const (
@@ -106,11 +107,20 @@ func main() {
 	rateLimiter := util.NewTokenBucketRateLimiter(0.1, 1)
 	known := &extensions.IngressList{}
 
+	log.Println("Start nginx...")
 	// Controller loop
 	shellOut("nginx")
+	log.Println("Nginx start success")
+
 	for {
 		rateLimiter.Accept()
-		ingresses, err := ingClient.List(labels.Everything(), fields.Everything())
+		options := unversioned.ListOptions{
+			LabelSelector: unversioned.LabelSelector{labels.Everything()},
+			FieldSelector: unversioned.FieldSelector{fields.Everything()},
+		}
+
+		ingresses, err := ingClient.List(options)
+		log.Println("err :", err.Error())
 		if err != nil || reflect.DeepEqual(ingresses.Items, known.Items) {
 			continue
 		}
@@ -121,6 +131,8 @@ func main() {
 		} else if err := tmpl.Execute(w, ingresses); err != nil {
 			log.Fatalf("Failed to write template %v", err)
 		}
+
+		log.Println("Reload nginx")
 		shellOut("nginx -s reload")
 	}
 }

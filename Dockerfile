@@ -1,18 +1,26 @@
-# Copyright 2015 The Kubernetes Authors. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+FROM debian:jessie
 
-FROM shenshouer/nginx:google_containers-0.1
+MAINTAINER NGINX Docker Maintainers "shenshouer51@gmail.com"
+
+RUN apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62
+RUN echo "deb http://nginx.org/packages/mainline/debian/ jessie nginx" >> /etc/apt/sources.list
+
+ENV NGINX_VERSION 1.9.7-1~jessie
+
+RUN apt-get update && \
+    apt-get install -y curl && apt-get install -y vim \
+    apt-get install -y ca-certificates nginx=${NGINX_VERSION} && \
+    rm -rf /var/lib/apt/lists/*
+
+# forward request and error logs to docker log collector
+RUN ln -sf /dev/stdout /var/log/nginx/access.log
+RUN ln -sf /dev/stderr /var/log/nginx/error.log
+
+VOLUME ["/var/cache/nginx"]
+
 COPY controller /
 COPY default.conf /etc/nginx/nginx.conf
+
+EXPOSE 80 443
+
 CMD ["/controller"]
