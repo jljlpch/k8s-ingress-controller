@@ -1,0 +1,27 @@
+FROM debian:jessie
+
+MAINTAINER NGINX Docker Maintainers "shenshouer51@gmail.com"
+
+COPY nginx_signing.key /
+RUN apt-key add /nginx_signing.key && rm /etc/apt/sources.list
+COPY sources.list /etc/apt/sources.list
+
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get install -y vim && \
+    apt-get install -y nginx && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm /nginx_signing.key
+
+# forward request and error logs to docker log collector
+RUN ln -sf /dev/stdout /var/log/nginx/access.log
+RUN ln -sf /dev/stderr /var/log/nginx/error.log
+
+VOLUME ["/var/cache/nginx"]
+
+COPY controller /
+COPY default.conf /etc/nginx/nginx.conf
+
+EXPOSE 80 443
+
+CMD ["nginx;/controller"]

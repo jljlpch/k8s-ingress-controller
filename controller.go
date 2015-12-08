@@ -109,7 +109,7 @@ func main() {
 
 	log.Println("Start nginx...")
 	// Controller loop
-	shellOut("nginx")
+	go shellOut("nginx -g 'daemon on;'")
 	log.Println("Nginx start success")
 
 	for {
@@ -120,7 +120,10 @@ func main() {
 		}
 
 		ingresses, err := ingClient.List(options)
-		log.Println("err :", err.Error())
+		if err != nil{
+			log.Println("err :", err.Error())
+		}
+
 		if err != nil || reflect.DeepEqual(ingresses.Items, known.Items) {
 			continue
 		}

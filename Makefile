@@ -1,7 +1,7 @@
 all: push
 
 # 0.0 shouldn't clobber any release builds
-TAG = 1.8-test03
+TAG = 1.8-test07
 PREFIX = dhub.yunpro.cn/shenshouer/ingress-nginx
 
 controller: controller.go
